@@ -42,9 +42,7 @@ class Node extends React.Component {
           .catch(err => console.log(err));
       };
 
-    openModal = () => {
-        this.setState({ modalIsOpen: true});
-    }
+    openModal = () => this.setState({ modalIsOpen: true});
     closeModal = () => this.setState({ modalIsOpen: false });
   
     handleClick(id) {

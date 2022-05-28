@@ -1,5 +1,5 @@
 import React from 'react';
-import {Modal, Button} from 'react-bootstrap';
+import {Modal, Button, Row, Col, Container} from 'react-bootstrap';
 import Select from 'react-select';
 import axios from 'axios';
 
@@ -17,7 +17,6 @@ class Tree extends React.Component {
         }
         this.setRootNodeTitle = this.setRootNodeTitle.bind(this);
         this.createRootNode = this.createRootNode.bind(this);
-        this.getOptions = this.getOptions.bind(this);
     }
 
     componentDidMount() {
@@ -31,7 +30,6 @@ class Tree extends React.Component {
           .catch(err => console.log(err));
       };
 
-    openModal = () => this.setState({ modalIsOpen: true});
     closeModal = () => this.setState({ modalIsOpen: false});
 
     setRootNodeTitle(e){
@@ -50,6 +48,10 @@ class Tree extends React.Component {
 
     getOptions() {
         return this.state.optionsList.filter((option) => option.related_items.length === 0);
+    }
+
+    createItem() {
+        console.log("hi");
     }
 
     renderData() {
@@ -78,10 +80,22 @@ class Tree extends React.Component {
                     </Modal.Header>
 
                     <Modal.Body>
-                        <label>
-                            Root word:
-                            <Select options={this.getOptions()} onChange={this.setRootNodeTitle} />
-                        </label>
+                        <Container>
+                            <Row>
+                                <Col>
+                                    Root word:
+                                </Col>
+                                <Col>
+                                    <Select options={this.getOptions()} onChange={this.setRootNodeTitle} />
+                                </Col>
+                            </Row>
+                            <Row className="text-center mt-5">
+                                <p>Can't see the word you want?</p>
+                            </Row>
+                            <Row>
+                                <Button onClick={() => this.createItem()} variant="secondary" className="mx-2">Create a new word</Button>
+                            </Row>
+                        </Container>
                     </Modal.Body>
 
                     <Modal.Footer>

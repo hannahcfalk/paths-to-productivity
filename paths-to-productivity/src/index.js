@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {Navbar, Container, Row, Col} from 'react-bootstrap';
-import {BsInstagram, BsFacebook, BsTwitter, BsGoogle} from 'react-icons/bs'
+import {BsInstagram, BsYoutube, BsTwitter, BsGoogle} from 'react-icons/bs'
 
 import Tree from './components/Tree';
 import './index.css';
@@ -18,10 +18,10 @@ root.render(
         </Navbar.Brand>
         <Navbar.Brand className="ml-auto">
           <Row>
-            <Col><BsInstagram /></Col>
-            <Col><BsFacebook /></Col>
-            <Col><BsTwitter /></Col>
-            <Col><BsGoogle /></Col>
+            <Col><a style={{color:"black"}} target='_blank' href="https://www.instagram.com/explore/tags/productivity/"><BsInstagram /></a></Col>
+            <Col><a style={{color:"black"}} target='_blank' href="https://twitter.com/search?q=productivity"><BsTwitter /></a></Col>
+            <Col><a style={{color:"black"}} target='_blank' href="https://www.google.com/search?q=productivity"><BsGoogle /></a></Col>
+            <Col><a style={{color:"black"}} target='_blank' href="https://www.youtube.com/results?search_query=productivity"><BsYoutube /></a></Col>
           </Row>
         </Navbar.Brand>
       </Container>
