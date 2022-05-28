@@ -1,7 +1,7 @@
 import React from 'react';
 import {Modal, Button, Row, Col} from 'react-bootstrap';
 import Select from 'react-select';
-import {children} from '../../constants';
+import axios from 'axios';
 
 class Node extends React.Component {
     constructor(props) {
@@ -10,6 +10,7 @@ class Node extends React.Component {
             nodeTitle: '',
             modalIsOpen: false,
             data: {},
+            optionsList: [],
             hasChildren: this.props.hasChildren
         }
         this.createNewNode = this.createNewNode.bind(this);
@@ -21,22 +22,34 @@ class Node extends React.Component {
     }
     
     createNewNode(){
-        let data = this.state.data;
-        data["children"] = [];
-        this.props.item.children.push(data);
-        this.setState(
-            {
-                hasChildren: true,
-            }
-        );
-        this.closeModal();
+        if (this.state.nodeTitle !== '') {
+            let data = this.state.data;
+            data["children"] = [];
+            this.props.item.children.push(data);
+            this.setState(
+                {
+                    hasChildren: true,
+                }
+            );
+            this.closeModal();
+        }
     }
+    
+    refreshList = (id) => {
+        axios   //Axios to send and receive HTTP requests
+          .get("http://localhost:8000/api/items/"+ id + "/")
+          .then(res => this.setState({ optionsList: res.data }))
+          .catch(err => console.log(err));
+      };
 
-    openModal = () => this.setState({ modalIsOpen: true});
+    openModal = () => {
+        this.setState({ modalIsOpen: true});
+    }
     closeModal = () => this.setState({ modalIsOpen: false });
   
-    handleClick() {
-      this.openModal();
+    handleClick(id) {
+        this.refreshList(id);
+        this.openModal();
     }
       
     render() {
@@ -45,7 +58,7 @@ class Node extends React.Component {
                 <Row className="mx-5 my-2">
                     <div  className="mx-1">
                         <Row>
-                            <Button as={Col} onClick={() => this.handleClick()} style={{backgroundColor: this.props.item.color}}>
+                            <Button as={Col} onClick={() => this.handleClick(this.props.item.id)} style={{backgroundColor: this.props.item.color}}>
                                 <h4>{this.props.item.label}</h4>
                                 <p>{this.props.item.description}</p>
                                 <p><i>Contributed by: {this.props.item.contributor}</i></p>
@@ -66,7 +79,7 @@ class Node extends React.Component {
                     <Modal.Body>
                         <label>
                             Node title:
-                            <Select options={children} onChange={this.setNewNodeTitle} />
+                            <Select options={this.state.optionsList} onChange={this.setNewNodeTitle} />
                         </label>
                     </Modal.Body>
 

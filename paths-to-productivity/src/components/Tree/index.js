@@ -53,7 +53,6 @@ class Tree extends React.Component {
     }
 
     renderData() {
-        console.log(this.state.optionsList);
         let item = this.state.data;
         if (Object.keys(item).length > 1) {
             return <Branch key={item.id} item={item} level={0} />
