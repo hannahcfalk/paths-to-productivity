@@ -1,9 +1,10 @@
 import React from 'react';
-import {Modal, Button, Row, Col, Container} from 'react-bootstrap';
+import {Modal, Button, Row, Col, Container, Form} from 'react-bootstrap';
 import Select from 'react-select';
 import axios from 'axios';
 
 import Branch from '../Branch';
+import NameForm from '../Form';
 
 
 class Tree extends React.Component {
@@ -13,10 +14,19 @@ class Tree extends React.Component {
             rootNodeTitle: '',
             data: {},
             modalIsOpen: true,
-            optionsList: []
+            formIsOpen: false,
+            optionsList: [],
+            formData: {
+                label: '',
+                description: '',
+                color: '',
+                link: '',
+                contributor: '',
+            },
         }
         this.setRootNodeTitle = this.setRootNodeTitle.bind(this);
         this.createRootNode = this.createRootNode.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     componentDidMount() {
@@ -28,7 +38,92 @@ class Tree extends React.Component {
           .get("http://localhost:8000/api/items/")
           .then(res => this.setState({ optionsList: res.data }))
           .catch(err => console.log(err));
-      };
+    };
+
+    handleSubmit(event) {
+        axios
+        .post("http://localhost:8000/api/items/", this.state.formData)
+        .then(res => this.refreshList())
+        .catch(err => console.log(err.response));
+        event.preventDefault();
+        this.closeForm()
+    }
+
+    
+    renderForm() {
+        return (
+          <Form className="m-1" onSubmit={this.handleSubmit}>
+              <Form.Group className="mb-3">
+                  <Form.Label>Label</Form.Label>
+                  <Form.Control
+                      type="text" 
+                      placeholder="Enter the title of the topic"
+                      value={this.state.formData.label}
+                      onChange={e =>  {
+                          let formData = this.state.formData
+                          formData.label = e.target.value
+                          this.setState({ formData: formData })
+                      }}
+                  />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                  <Form.Label>Description</Form.Label>
+                  <Form.Control
+                      type="text" 
+                      placeholder="Enter a brief description of the topic"
+                      value={this.state.formData.description}
+                      onChange={e =>  {
+                          let formData = this.state.formData
+                          formData.description = e.target.value
+                          this.setState({ formData: formData })
+                      }}
+                  />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                  <Form.Label>Color</Form.Label>
+                  <Form.Control
+                      type="text" 
+                      placeholder="Enter the hex color code, starting with # e.g. #CD6211"
+                      value={this.state.formData.color}
+                      onChange={e =>  {
+                          let formData = this.state.formData
+                          formData.color = e.target.value
+                          this.setState({ formData: formData })
+                      }}
+                  />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                  <Form.Label>Link</Form.Label>
+                  <Form.Control
+                      type="text" 
+                      placeholder="Add a URL to tell others about a tutorial information"
+                      value={this.state.formData.link}
+                      onChange={e =>  {
+                          let formData = this.state.formData
+                          formData.link = e.target.value
+                          this.setState({ formData: formData })
+                      }}
+                  />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                  <Form.Label>Contributor</Form.Label>
+                  <Form.Control
+                      type="text" 
+                      placeholder="Enter your name or nickname"
+                      value={this.state.formData.contributor}
+                      onChange={e =>  {
+                          let formData = this.state.formData
+                          formData.contributor = e.target.value
+                          this.setState({ formData: formData })
+                      }}
+                  />
+              </Form.Group>
+              <Button variant="primary" type="submit">
+                  Submit
+              </Button>
+          </Form>
+        );
+      }
 
     closeModal = () => this.setState({ modalIsOpen: false});
 
@@ -50,9 +145,8 @@ class Tree extends React.Component {
         return this.state.optionsList.filter((option) => option.related_items.length === 0);
     }
 
-    createItem() {
-        console.log("hi");
-    }
+    openForm = () => this.setState({ formIsOpen: true});
+    closeForm = () => this.setState({ formIsOpen: false});
 
     renderData() {
         let item = this.state.data;
@@ -93,7 +187,8 @@ class Tree extends React.Component {
                                 <p>Can't see the word you want?</p>
                             </Row>
                             <Row>
-                                <Button onClick={() => this.createItem()} variant="secondary" className="mx-2">Create a new word</Button>
+                                <Button onClick={() => this.openForm()} variant="secondary" className="mx-2">Create a new word</Button>
+                                {this.state.formIsOpen && this.renderForm()}
                             </Row>
                         </Container>
                     </Modal.Body>
