@@ -15,7 +15,7 @@ To host this project locally:
 
 *Django Rest Framework*
 1. Navigate to the `paths-to-productivity-backend` directory and activate the virtual environment (how to do this will depend on your OS, see https://docs.python.org/3/library/venv.html# for additional information)
-2. cd into ptp_backend
+2. cd into `ptp_backend`
 3. Run `python manage.py migrate` to populate the DB, then `python manage.py runserver` to run it
 
 *React*
