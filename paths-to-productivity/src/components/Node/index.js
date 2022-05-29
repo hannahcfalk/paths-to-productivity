@@ -10,7 +10,6 @@ class Node extends React.Component {
             nodeTitle: '',
             modalIsOpen: false,
             data: {},
-            allOptionsList: [],
             optionsList: [],
             hasChildren: this.props.hasChildren,
             formData: {
@@ -23,10 +22,16 @@ class Node extends React.Component {
             },
             validated: false,
             errorText: '',
+            possibleParents: [],
         }
         this.createNewNode = this.createNewNode.bind(this);
         this.setNewNodeTitle = this.setNewNodeTitle.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    
+    componentDidMount() {
+        this.refreshList()
     }
 
     setNewNodeTitle(e){
@@ -41,9 +46,14 @@ class Node extends React.Component {
             event.stopPropagation();
           }
         else {
+            if (!this.state.formData.related_items.includes(this.props.item.id)) {
+                let formData = this.state.formData
+                formData.related_items.push(this.props.item.id);
+                this.setState({ formData: formData })
+            }
             axios
             .post("http://localhost:8000/api/items/", this.state.formData)
-            .then(res => this.getChildrenList( this.props.item.id))
+            .then(res => this.refreshList( this.props.item.id))
             .catch(err => console.log(err.response));
             event.preventDefault();
             this.closeForm();
@@ -51,15 +61,20 @@ class Node extends React.Component {
 
     }
 
-    componentDidMount() {
-        this.refreshList()
-    }
+    refreshList = (id) => {
+        if (id == null) {
 
-    refreshList = () => {
-        axios   //Axios to send and receive HTTP requests
-          .get("http://localhost:8000/api/items/")
-          .then(res => this.setState({ allOptionsList: res.data }))
-          .catch(err => console.log(err));
+            axios   //Axios to send and receive HTTP requests
+            .get("http://localhost:8000/api/items/")
+            .then(res => this.setState({ optionsList: res.data, possibleParents: res.data }))
+            .catch(err => console.log(err));
+        }
+        else {
+            axios   //Axios to send and receive HTTP requests
+            .get("http://localhost:8000/api/items/"+ id + "/")
+            .then(res => this.setState({ optionsList: res.data }))
+            .catch(err => console.log(err));
+        }
     };
 
     renderForm() {
@@ -140,11 +155,11 @@ class Node extends React.Component {
                   />
               </Form.Group>
               <Form.Group className="mb-3">
-                  <p>Help other users build trees by making this a child of different parents</p>
-                  <Form.Label>Other parents</Form.Label>
+                  <p>Help provide suggestions to other users, by sharing your nodes with related nodes</p>
+                  <Form.Label>Related Nodes</Form.Label>
                   <Select
                     defaultValue={[this.props.item]}
-                    options={this.state.allOptionsList}
+                    options={this.state.possibleParents}
                     isMulti
                     onChange={e =>  {
                           let formData = this.state.formData
@@ -177,23 +192,44 @@ class Node extends React.Component {
             this.setState({ errorText: 'You need to select a label to create a node!' });
         }
     }
-    
-    getChildrenList = (id) => {
-        axios   //Axios to send and receive HTTP requests
-          .get("http://localhost:8000/api/items/"+ id + "/")
-          .then(res => this.setState({ optionsList: res.data }))
-          .catch(err => console.log(err));
-      };
 
     openModal = () => this.setState({ modalIsOpen: true});
-    closeModal = () => this.setState({ modalIsOpen: false });
+    closeModal = () => this.setState({ modalIsOpen: false, formIsOpen: false });
     
     openForm = () => this.setState({ formIsOpen: true});
     closeForm = () => this.setState({ formIsOpen: false});
   
-    handleClick(id) {
-        this.getChildrenList(id);
+    handleClick(item) {
+        if (item.label === "Beginning") {
+            this.refreshList();
+        }
+        else {
+            this.refreshList(item.id);
+        }
         this.openModal();
+    }
+
+    renderButtonInfo(item) {
+        if (item.label === "Beginning") {
+            return <p>Click here to get started</p>
+        }
+        else {
+            return (
+                <div>
+                    <h4>{item.label}</h4>
+                    <p>{item.description}</p>
+                    <p><i>Contributed by: {item.contributor}</i></p>
+                </div>
+
+            );
+        }
+    }
+    
+    renderHyperLink(item) {
+        if (item.link != null) {
+            return <a target='_blank' href={this.props.item.link}>Learn more about {this.props.item.label}</a>
+        }
+      
     }
       
     render() {
@@ -202,22 +238,23 @@ class Node extends React.Component {
                 <Row className="mx-5 my-2">
                     <div  className="mx-1">
                         <Row>
-                            <Button as={Col} onClick={() => this.handleClick(this.props.item.id)} style={{backgroundColor: this.props.item.color}}>
-                                <h4>{this.props.item.label}</h4>
-                                <p>{this.props.item.description}</p>
-                                <p><i>Contributed by: {this.props.item.contributor}</i></p>
+                            <Button className="m-1" as={Col} onClick={() => this.handleClick(this.props.item)} style={{backgroundColor: this.props.item.color}}>
+                                {this.renderButtonInfo(this.props.item)}
                             </Button>
                         </Row>
                         <Row className="text-center">
-                            <a target='_blank' href={this.props.item.link}>Learn more about {this.props.item.label}</a>
+                            {this.renderHyperLink(this.props.item)}
+                        </Row>
+                        <Row>
+                        {this.state.hasChildren && <Button as={Col} onClick={this.props.onToggle} variant="primary" className="mx-1">Show/Hide Children</Button>}
                         </Row>
                     </div>
                     
-                    {this.state.hasChildren && <Button as={Col} onClick={this.props.onToggle} variant="primary" className="mx-1">Show/Hide Children</Button>}
+
                 </Row>
                 <Modal show={this.state.modalIsOpen}  onHide={this.closeModal}>
                     <Modal.Header>
-                        <Modal.Title>Enter the title of your node</Modal.Title>
+                        <Modal.Title>Add a new node to your tree</Modal.Title>
                     </Modal.Header>
 
                     <Modal.Body>
@@ -242,7 +279,7 @@ class Node extends React.Component {
                     </Modal.Body>
 
                     <Modal.Footer>
-                        <Button onClick={this.closeModal} variant="secondary">Cancel</Button><Button onClick={this.createNewNode} variant="primary">Submit</Button>
+                        <Button onClick={this.closeModal} variant="secondary">Cancel</Button><Button onClick={this.createNewNode} variant="primary">Add node to tree</Button>
                     </Modal.Footer>
                     <p className='text-center'>{this.state.errorText}</p>
                 </Modal>

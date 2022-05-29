@@ -18,6 +18,7 @@ root.render(
         </Navbar.Brand>
         <Navbar.Brand className="ml-auto">
           <Row>
+            <Col><small>Need some inspiration? Check out</small></Col>
             <Col><a style={{color:"black"}} target='_blank' href="https://www.instagram.com/explore/tags/productivity/"><BsInstagram /></a></Col>
             <Col><a style={{color:"black"}} target='_blank' href="https://twitter.com/search?q=productivity"><BsTwitter /></a></Col>
             <Col><a style={{color:"black"}} target='_blank' href="https://www.google.com/search?q=productivity"><BsGoogle /></a></Col>
