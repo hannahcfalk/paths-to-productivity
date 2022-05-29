@@ -68,3 +68,8 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+### Tutorials used
+https://nmingaleev.medium.com/how-to-create-a-tree-component-with-react-hooks-933d0c50c05b
+https://www.geeksforgeeks.org/integrating-django-with-reactjs-using-django-rest-framework/
+

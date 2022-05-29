@@ -18,13 +18,11 @@ class ItemView(viewsets.ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        item = Item.objects.get(pk=pk)
         queryset = Item.objects.filter(related_items__pk=pk)
         serializer = ItemSerializer(queryset, many=True)
         return Response(serializer.data)
     
     def create(self, request):
-        print(request.data)
         serializer = ItemSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

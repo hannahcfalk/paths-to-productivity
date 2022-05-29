@@ -4,10 +4,11 @@ import Select from 'react-select';
 import axios from 'axios';
 
 import Branch from '../Branch';
-import NameForm from '../Form';
+
 
 
 class Tree extends React.Component {
+    
     constructor(props) {
         super(props);
         this.state = {
@@ -23,6 +24,8 @@ class Tree extends React.Component {
                 link: '',
                 contributor: '',
             },
+            validated: false,
+            errorText: '',
         }
         this.setRootNodeTitle = this.setRootNodeTitle.bind(this);
         this.createRootNode = this.createRootNode.bind(this);
@@ -41,21 +44,33 @@ class Tree extends React.Component {
     };
 
     handleSubmit(event) {
-        axios
-        .post("http://localhost:8000/api/items/", this.state.formData)
-        .then(res => this.refreshList())
-        .catch(err => console.log(err.response));
-        event.preventDefault();
-        this.closeForm()
+        const form = event.currentTarget;
+        this.setState({validated: true});
+        if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        else {
+            
+            axios
+            .post("http://localhost:8000/api/items/", this.state.formData)
+            .then(res => this.refreshList())
+            .catch(err => console.log(err.response));
+            event.preventDefault();
+            this.closeForm();
+        }
+
     }
 
     
     renderForm() {
         return (
-          <Form className="m-1" onSubmit={this.handleSubmit}>
+            
+          <Form noValidate validated={this.state.validated} className="m-1" onSubmit={this.handleSubmit}>
               <Form.Group className="mb-3">
                   <Form.Label>Label</Form.Label>
                   <Form.Control
+                      required
                       type="text" 
                       placeholder="Enter the title of the topic"
                       value={this.state.formData.label}
@@ -69,6 +84,7 @@ class Tree extends React.Component {
               <Form.Group className="mb-3">
                   <Form.Label>Description</Form.Label>
                   <Form.Control
+                      required
                       type="text" 
                       placeholder="Enter a brief description of the topic"
                       value={this.state.formData.description}
@@ -82,6 +98,7 @@ class Tree extends React.Component {
               <Form.Group className="mb-3">
                   <Form.Label>Color</Form.Label>
                   <Form.Control
+                      required
                       type="text" 
                       placeholder="Enter the hex color code, starting with # e.g. #CD6211"
                       value={this.state.formData.color}
@@ -90,13 +107,17 @@ class Tree extends React.Component {
                           formData.color = e.target.value
                           this.setState({ formData: formData })
                       }}
+                      pattern="#[A-Za-z1-9]{6}"
                   />
+                  <Form.Control.Feedback type="invalid">
+                    Color needs to be in the form #CD6211, click <a href="https://htmlcolorcodes.com/" target="_blank">here</a> for ideas.
+                  </Form.Control.Feedback>
               </Form.Group>
               <Form.Group className="mb-3">
-                  <Form.Label>Link</Form.Label>
+                  <Form.Label>Link (Optional)</Form.Label>
                   <Form.Control
                       type="text" 
-                      placeholder="Add a URL to tell others about a tutorial information"
+                      placeholder="Add an URL to tell others about tutorial information"
                       value={this.state.formData.link}
                       onChange={e =>  {
                           let formData = this.state.formData
@@ -108,6 +129,7 @@ class Tree extends React.Component {
               <Form.Group className="mb-3">
                   <Form.Label>Contributor</Form.Label>
                   <Form.Control
+                      required
                       type="text" 
                       placeholder="Enter your name or nickname"
                       value={this.state.formData.contributor}
@@ -118,6 +140,20 @@ class Tree extends React.Component {
                       }}
                   />
               </Form.Group>
+              <Form.Group className="mb-3">
+                  <p>Help other users build trees by making this a child of different parents</p>
+                  <Form.Label>Other parents</Form.Label>
+                  <Select
+
+                    options={this.state.optionsList}
+                    isMulti
+                    onChange={e =>  {
+                          let formData = this.state.formData
+                          formData.related_items = e.map((node => node.id));
+                          this.setState({ formData: formData })
+                      }}
+                />
+                </Form.Group>
               <Button variant="primary" type="submit">
                   Submit
               </Button>
@@ -135,14 +171,13 @@ class Tree extends React.Component {
         if (this.state.rootNodeTitle !== '') {
             let data = this.state.data;
             data["children"] = [];
-            this.setState({ data: data });
+            this.setState({ data: data, errorText: '' });
             this.closeModal(); 
         }
+        else {
+            this.setState({ errorText: 'You need to select a root node!' });
+        }
 
-    }
-
-    getOptions() {
-        return this.state.optionsList.filter((option) => option.related_items.length === 0);
     }
 
     openForm = () => this.setState({ formIsOpen: true});
@@ -180,7 +215,7 @@ class Tree extends React.Component {
                                     Root word:
                                 </Col>
                                 <Col>
-                                    <Select options={this.getOptions()} onChange={this.setRootNodeTitle} />
+                                    <Select options={this.state.optionsList} onChange={this.setRootNodeTitle} />
                                 </Col>
                             </Row>
                             <Row className="text-center mt-5">
@@ -196,6 +231,7 @@ class Tree extends React.Component {
                     <Modal.Footer>
                         <Button onClick={this.createRootNode}>Begin my path to productivity</Button>
                     </Modal.Footer>
+                    <p className='text-center'>{this.state.errorText}</p>
                 </Modal>
                 {this.renderData()}
             </div>
